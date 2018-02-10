@@ -3,9 +3,17 @@ import logo from './logo.svg';
 import './App.css';
 
 
-const hoc = (overrideProps) =>
-  (BaseComponent) =>
-    (props)=>( <BaseComponent {...props} {...overrideProps}/> )
+const neverRender = (BaseComponent) =>
+  class extends Component {
+
+    shouldComponentUpdate() {
+      return false
+    }
+    render() {
+      return (<BaseComponent {...this.props} />)
+    }
+  }
+
 
 const User = ({name}) =>(
   <div className='User'>
@@ -14,7 +22,7 @@ const User = ({name}) =>(
 )
 
 
-const User2 = hoc({name:'BOB'})(User)
+const User2 = neverRender(User)
 
 const App = () =>(
   <div>
