@@ -1,18 +1,18 @@
 import React, { Component } from 'react';
 import logo from './logo.svg';
 import './App.css';
+import { setPropTypes, setDisplayName, compose } from "recompose";
+import PropTypes from 'prop-types'
 
 
-const neverRender = (BaseComponent) =>
-  class extends Component {
+const enhancer = compose(
+  setDisplayName('UserX'),
+  setPropTypes({
+    name:PropTypes.string.isRequired
+  })
+)
 
-    shouldComponentUpdate() {
-      return false
-    }
-    render() {
-      return (<BaseComponent {...this.props} />)
-    }
-  }
+
 
 
 const User = ({name}) =>(
@@ -22,7 +22,7 @@ const User = ({name}) =>(
 )
 
 
-const User2 = neverRender(User)
+const User2 = enhancer(User)
 
 const App = () =>(
   <div>
