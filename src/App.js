@@ -3,8 +3,9 @@ import logo from './logo.svg';
 import './App.css';
 
 
-const hoc = (BaseComponent) =>
-  (props)=>( <BaseComponent {...props}/> )
+const hoc = (overrideProps) =>
+  (BaseComponent) =>
+    (props)=>( <BaseComponent {...props} {...overrideProps}/> )
 
 const User = ({name}) =>(
   <div className='User'>
@@ -13,7 +14,7 @@ const User = ({name}) =>(
 )
 
 
-const User2 = hoc(User)
+const User2 = hoc({name:'BOB'})(User)
 
 const App = () =>(
   <div>
