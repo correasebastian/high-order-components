@@ -15,11 +15,40 @@ import { compose, withState, withHandlers, pure, onlyUpdateForKeys,
 
 import './App.css'
 
-const Cell = ({ data, onChange, width }) =>
+
+const optimize = compose(
+  // #1
+  pure,
+
+  // #2
+  // onlyUpdateForKeys(['data', 'width', 'onChange']),
+
+  // #3
+  // onlyUpdateForPropTypes,
+  // setPropTypes({
+  //   data: PropTypes.string,
+  //   width: PropTypes.number,
+  //   onChange: PropTypes.func,
+  // })
+
+  // #4
+  // shouldUpdate((prev, next) =>
+  //   prev.data !== next.data ||
+  //   prev.width !== next.width ||
+  //   prev.onChange !== next.onChange
+  // ),
+
+  withHandlers({
+    onChange: ({ id, onChange }) => (e) => onChange(id, e.target.value)
+  })
+);
+
+const Cell = optimize(({ data, onChange, width }) =>
   <div className="Cell" style={{ width: `${width}%`, borderColor: randomColor() }} >
     <textarea type="text" value={ data } onChange={ onChange } />
   </div>
-;
+);
+
 const Spreadsheet = ({ rows, cols, cellsData, onCellChange }) =>
   <div className = "Spreadsheet" > {
     range(rows)
@@ -28,7 +57,7 @@ const Spreadsheet = ({ rows, cols, cellsData, onCellChange }) =>
       .map((col, j) => `${i}-${j}`)
       .map(id =>
         <Cell key={id} id={id} data={cellsData[id] || ''} 
-          onChange={ e => onCellChange(id, e.target.value) } width = { 100 / cols } 
+          onChange={ onCellChange } width = { 100 / cols } 
         />
       )
     )
