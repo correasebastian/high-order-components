@@ -1,35 +1,49 @@
 import React, { Component } from 'react';
 import logo from './logo.svg';
 import './App.css';
-import { compose, flattenProp, withProps } from 'recompose' ;
-const { connect } = ReactRedux();
+import { compose, flattenProp, withProps, lifecycle, branch, renderComponent } from 'recompose' ;
 
-const mapStateToProps = (state) => ({ user: state.user });
+
+const withUserData = lifecycle({
+  state: { loading: true },
+  componentDidMount() {
+    fetchData().then((data) =>
+      this.setState({ loading: false, ...data }));
+  }
+});
+
+const Spinner = () =>
+  <div className="Spinner">
+    <div className="loader">Loading...</div>
+  </div>;
+
+const isLoading = ({ loading }) => loading;
+
+const withSpinnerWhileLoading = branch(
+  isLoading,
+  renderComponent(Spinner)
+);
 
 const enhance = compose(
-  connect(mapStateToProps),
-  flattenProp('user')
+  withUserData,
+  withSpinnerWhileLoading
 );
 
 const User = enhance(({ name, status }) =>
-  <div className="User"> { name } - { status } </div>
+  <div className="User">{ name }—{ status }</div>
 );
 
 const App = () =>
-  <div className="App">
+  <div>
     <User />
   </div>;
 
 
 
-// Mock Implemenation of ReactRedux connect
-function ReactRedux() {
-  const state = {
-    user: { name: 'Tim', status: 'active' }
-  };
-
-  return {
-    connect: (map) => withProps(map(state))
-  }
+function fetchData() {
+  return new Promise((resolve) => {
+    setTimeout(() => resolve({ name: "Tim", status: "active" }), 1500);
+  });
 }
+
 export default App;
