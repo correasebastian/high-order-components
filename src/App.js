@@ -1,52 +1,22 @@
 import React, { Component } from 'react';
 import logo from './logo.svg';
 import './App.css';
-import { compose, renderComponent, branch, renderNothing } from 'recompose' ;
+import { compose, renderComponent, branch, renderNothing, withProps, componentFromProp } from 'recompose' ;
 
 
-const User = ({ name, status }) =>
-  <div className="User">{ name }—{ status }</div>;
-
-const userIsNotActive = ({ status }) => status !== 'active';
-const hideIfNotActive = branch(userIsNotActive, renderNothing);
-
-const FeaturedUser = hideIfNotActive(({ name, status }) =>
-  <div>
-    <h3>Today's Featured User</h3>
-    <User name={ name } status={ status } />
-    <hr />
-  </div>
-);
-
-const UserList = ({ users }) =>
-  <div className="UserList">
-    <h3>All Users</h3>
-    { users && users.map((user, idx) => <User key={idx} {...user} />) }
-  </div>;
-
-const users = [
-  { name: "Tim", status: "active" },
-  { name: "Bob", status: "active" },
-  { name: "Joe", status: "inactive" },
-  { name: "Jim", status: "pending" },
-];
-
-const featured = users[getRandomInt(0, 3)];
+const Link = compose(
+  withProps(({ type='a', to='#' }) =>
+    type === 'a'
+      ? { type, href: to }
+      : { type, onClick(e) { window.location=to }})
+)(componentFromProp('type'));
 
 const App = () =>
   <div className="App">
-    <h2>User Management</h2>
-    <hr />
-    <FeaturedUser name={ featured.name } status={ featured.status } />
-    <UserList users={ users } />
-  </div>;
-
-
-
-function getRandomInt(min, max) {
-  min = Math.ceil(min);
-  max = Math.floor(max);
-  return Math.floor(Math.random() * (max - min)) + min;
-}
-
+    <a href="#/page1">Anchor Link</a>
+    <button onClick={ ()=> window.location="#/page2" }>Button Link</button>
+    <Link to="#/page1">Anchor Link</Link>
+    <Link type="button" to="#/page2">Button Link</Link>
+  </div>
+  
 export default App;
