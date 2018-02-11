@@ -1,45 +1,40 @@
 import React, { Component } from 'react';
 import logo from './logo.svg';
 import './App.css';
-import { withReducer, withHandlers, compose, lifecycle } from "recompose";
-import PropTypes from 'prop-types'
+import {  mapProps } from "recompose";
 
+const User = ({ name, status }) =>
+  <div className="User">{ name }—{ status }</div>;
 
-const configPromise = fetchConfiguration();
-
-const withConfig = lifecycle({
-  state: { config: {} },
-  componentDidMount() {
-    configPromise.then(config =>
-      this.setState({ config }));
-  }
-});
-
-const User = withConfig(({ name, status, config }) =>
-  <div className="User">
-    { name }
-    { config.showStatus && '—' + status }
-    { config.canDeleteUsers && <button>X</button> }
-  </div>
-);
-
-const App = () =>
-  <div>
-    <User name="Tim" status="active" />
+const UserList = ({ users, status }) =>
+  <div className="UserList">
+    <h3>{ status } users</h3>
+    { users && users.map((user, index) => <User key={index}  {...user} />) }
   </div>;
 
+const users = [
+  { name: "Tim", status: 'active' },
+  { name: "Bob", status: 'active' },
+  { name: "Joe", status: 'pending' },
+  { name: "Jim", status: 'inactive' },
+];
 
-// Mock Configuration
+const filterByStatus = (status) => mapProps(
+  ({ users }) => ({
+    status,
+    users: users.filter(u => u.status === status)
+  })
+);
 
-const config = {
-  showStatus: true,
-  canDeleteUsers: true
-}
+const ActiveUsers = filterByStatus('active')(UserList);
+const InactiveUsers = filterByStatus('inactive')(UserList);
+const PendingUsers = filterByStatus('pending')(UserList);
 
-function fetchConfiguration() {
-  return new Promise((resolve) => {
-    setTimeout(() => resolve(config), 300);
-  });
-}
+const App = () =>
+  <div className="App">
+    <ActiveUsers users={ users } />
+    <InactiveUsers users={ users } />
+    <PendingUsers users={ users } />
+  </div>;
 
 export default App;
