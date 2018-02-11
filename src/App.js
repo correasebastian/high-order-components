@@ -1,8 +1,25 @@
 import React, { Component } from 'react';
 import logo from './logo.svg';
 import './App.css';
-import { withState, withHandlers, compose } from "recompose";
+import { withReducer, withHandlers, compose } from "recompose";
 import PropTypes from 'prop-types'
+
+
+
+export const SHOW = 'SHOW';
+export const HIDE = 'HIDE';
+export const TOGGLE = 'TOGGLE';
+
+export const showAction = () => ({
+  type: SHOW,
+})
+
+export const hideAction = () => ({
+  type: HIDE,
+})
+export const toggleAction = () => ({
+  type: TOGGLE,
+})
 
 
 const StatusList = () => (
@@ -14,11 +31,29 @@ const StatusList = () => (
 );
 
 const withToggle = compose(
-  withState('toggleOn', 'toggle', false),
+  withReducer( 'toggleOn', 'dispatch', (state, action) => {
+      switch (action.type) {
+        case SHOW:
+          return true
+        case HIDE:
+          return false
+        case TOGGLE:
+          return !state
+        default:
+          return state;
+      }
+    },
+    false),
   withHandlers({
-    show: ({ toggle /* from props */ }) => (e) => toggle(true),
-    hide: ({ toggle /* from props */ }) => (e) => toggle(false),
-    toggle: ({ toggle }) => (e) => toggle(current => !current)
+    show: ({
+      dispatch /* from props */
+    }) => (e) => dispatch(showAction()),
+    hide: ({
+      dispatch /* from props */
+    }) => (e) => dispatch(hideAction()),
+    toggle: ({
+      dispatch
+    }) => (e) => dispatch(toggleAction())
   })
 )
 
