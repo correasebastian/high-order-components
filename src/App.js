@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import logo from './logo.svg';
 import './App.css';
-import { withState } from "recompose";
+import { withState, withHandlers, compose } from "recompose";
 import PropTypes from 'prop-types'
 
 
@@ -13,21 +13,30 @@ const StatusList = () => (
   </div>
 );
 
+const withToggle = compose(
+  withState('toggleOn', 'toggle', false),
+  withHandlers({
+    show: ({ toggle /* from props */ }) => (e) => toggle(true),
+    hide: ({ toggle /* from props */ }) => (e) => toggle(false),
+    toggle: ({ toggle }) => (e) => toggle(current => !current)
+  })
+)
 
-const Status = withState('listShown', 'setListVisible', false)(
-  ({ status,listShown, setListVisible  }) => (
-    <div onClick={()=> setListVisible((x)=> !x)}>
+
+const Status = withToggle(
+  ({ status,toggleOn, toggle  }) => (
+    <div onClick={toggle}>
       {status}
-      {listShown && <StatusList />}
+      {toggleOn && <StatusList />}
     </div>
   )
 );
 
-const Tooltip = withState('tooltipShown', 'setTooltipVisible', false)(
-  ({ text, children, tooltipShown, setTooltipVisible }) => (
+const Tooltip = withToggle(
+  ({ text, children, toggleOn, show, hide }) => (
     <span>
-      { tooltipShown && <div className='Tooltip'> {text} </div>}
-      <span onMouseEnter={()=>setTooltipVisible(true)} onMouseLeave={()=>setTooltipVisible(false)}> 
+      { toggleOn && <div className='Tooltip'> {text} </div>}
+      <span onMouseEnter={show} onMouseLeave={hide}> 
         {children} 
       </span>
     </span>
