@@ -4,46 +4,76 @@ import './App.css';
 import { compose, flattenProp, withProps, lifecycle, branch, renderComponent } from 'recompose' ;
 
 
+const User = ({ name, status }) =>
+  <div className="User">{ name }—{ status }</div>;
+
 const withUserData = lifecycle({
-  state: { loading: true },
   componentDidMount() {
-    fetchData().then((data) =>
-      this.setState({ loading: false, ...data }));
+    fetchData().then(
+      (users) => this.setState({ users }),
+      (error) => this.setState({ error })
+    );
   }
 });
 
-const Spinner = () =>
-  <div className="Spinner">
-    <div className="loader">Loading...</div>
-  </div>;
+const UNAUTHENTICATED = 401;
+const UNAUTHORIZED = 403;
+const errorMsgs = {
+  [UNAUTHENTICATED]: 'Not Authenticated!',
+  [UNAUTHORIZED]: 'Not Authorized!',
+};
 
-const isLoading = ({ loading }) => loading;
+const AuthError = ({ error }) =>
+    <div className="Error">{ errorMsgs[error.statusCode] }</div>;
 
-const withSpinnerWhileLoading = branch(
-  isLoading,
-  renderComponent(Spinner)
-);
+const NoUsersMessage = () =>
+  <div>There are no users to display</div>;
+
+const hasErrorCode = ({ error }) => error && error.statusCode;
+const hasNoUsers = ({ users }) => users && users.length === 0;
+
+const nonOptimalStates = (states) =>
+  compose(...states.map(state =>
+    branch(state.when, renderComponent(state.render))));
 
 const enhance = compose(
   withUserData,
-  withSpinnerWhileLoading
+  nonOptimalStates([
+    { when: hasErrorCode, render: AuthError },
+    { when: hasNoUsers, render: NoUsersMessage }
+  ])
 );
 
-const User = enhance(({ name, status }) =>
-  <div className="User">{ name }—{ status }</div>
+const UserList = enhance(({ users, error }) =>
+  <div className="UserList">
+    { users && users.map((user, index) => <User key={index} {...user} />) }
+  </div>
 );
 
 const App = () =>
-  <div>
-    <User />
+  <div className="App">
+    <UserList />
   </div>;
 
 
-
+// Mock Service
+const noUsers = [];
+const users = [
+  { name: "Tim", status: "active" },
+  { name: "Bob", status: "active" },
+  { name: "Joe", status: "inactive" },
+  { name: "Jim", status: "pending" },
+];
 function fetchData() {
-  return new Promise((resolve) => {
-    setTimeout(() => resolve({ name: "Tim", status: "active" }), 1500);
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      // reject({ statusCode: UNAUTHENTICATED });
+      // reject({ statusCode: UNAUTHORIZED })
+      // resolve(noUsers);
+      resolve(users);
+    }, 100);
   });
 }
+
 
 export default App;
